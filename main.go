@@ -7,15 +7,6 @@ import (
 
 const portNumber = ":8080"
 
-// About is the about page handler
-func About(w http.ResponseWriter, r *http.Request) {
-
-}
-
-// Home is the home page handler
-func Home(w http.ResponseWriter, r *http.Request) {
-}
-
 func main() {
 
 	http.HandleFunc("/", Home)
