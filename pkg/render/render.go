@@ -10,6 +10,8 @@ import (
 
 // RenderTemplate renders templates using html/template
 func RenderTemplate(w http.ResponseWriter, tmpl string) {
+	//get template cache from app config
+
 	//create the template cache
 	tc, err := createTemplateCache()
 	if err != nil {
@@ -23,6 +25,7 @@ func RenderTemplate(w http.ResponseWriter, tmpl string) {
 		fmt.Println("Error getting template from cache: ", err)
 		return
 	}
+
 	buf := new(bytes.Buffer)
 	_ = t.Execute(buf, nil)
 
@@ -61,11 +64,13 @@ func createTemplateCache() (map[string]*template.Template, error) {
 			fmt.Println("Error parsing template: ", err)
 			return myCache, err
 		}
+
 		matches, err := filepath.Glob("./templates/*.layout.gohtml")
 		if err != nil {
 			fmt.Println("Error getting layout files: ", err)
 			return myCache, err
 		}
+
 		if len(matches) > 0 {
 			ts, err = ts.ParseGlob("./templates/*.layout.gohtml")
 			if err != nil {
@@ -80,7 +85,6 @@ func createTemplateCache() (map[string]*template.Template, error) {
 
 /*
 var tc = make(map[string]*template.Template)
-
 
 // RenderTemplate renders templates using html/template
 func RenderTemplate(w http.ResponseWriter, t string) {
