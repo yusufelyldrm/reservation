@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/yusufelyldrm/reservation/pkg/config"
+	"github.com/yusufelyldrm/reservation/pkg/models"
 	"net/http"
 	"path/filepath"
 	"text/template"
@@ -16,8 +17,13 @@ func NewTemplates(a *config.AppConfig) {
 	app = a
 }
 
+func AddDefaultData(td *models.TemplateData) *models.TemplateData {
+
+	return td
+}
+
 // RenderTemplate renders templates using html/template
-func RenderTemplate(w http.ResponseWriter, tmpl string) {
+func RenderTemplate(w http.ResponseWriter, tmpl string, td *models.TemplateData) {
 	var tc map[string]*template.Template
 	if app.UseCache {
 		//get template cache from app config
@@ -28,12 +34,13 @@ func RenderTemplate(w http.ResponseWriter, tmpl string) {
 	//get requested template from cache
 	t, ok := tc[tmpl]
 	if !ok {
-		fmt.Println("Could'nt get template from template cache")
+		fmt.Println("Couldn't get template from template cache")
 		return
 	}
 
 	buf := new(bytes.Buffer)
-	_ = t.Execute(buf, nil)
+	td = AddDefaultData(td)
+	_ = t.Execute(buf, td)
 
 	//render the template
 	_, err := buf.WriteTo(w)
@@ -43,7 +50,7 @@ func RenderTemplate(w http.ResponseWriter, tmpl string) {
 	}
 
 	parsedTemplate, _ := template.ParseFiles("./templates/"+tmpl, "./templates/base.layout.gohtml")
-	err = parsedTemplate.Execute(w, nil)
+	err = parsedTemplate.Execute(w, td)
 	if err != nil {
 		fmt.Println("Error parsing template: ", err)
 		return
