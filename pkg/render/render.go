@@ -70,7 +70,7 @@ func CreateTemplateCache() (map[string]*template.Template, error) {
 
 	//range through the all files ending with *.page.gohtml
 	for _, page := range pages {
-		//get the file namae
+		//get the file name
 		name := filepath.Base(page)
 		ts, err := template.New(name).ParseFiles(page)
 		if err != nil {
