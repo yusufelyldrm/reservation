@@ -1,0 +1,102 @@
+
+    {{template "base" .}}
+
+    {{define "content"}}
+        <div class="container">
+
+            <div class="row">
+                <div class="col">
+                    <img src="/static/images/generals-quarter.png" class="img-fluid img-thumbnail mx-auto d-block room-image" alt="room image">
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col">
+                    <h1 class="text-center mt-4">General's Suits</h1>
+                    <p>
+                        Bu site Akdeniz'in sıcak sularında istediğiniz zaman diliminde otellerden yer ayırtabilmeniz içindir.
+                        Bu site Akdeniz'in sıcak sularında istediğiniz zaman diliminde otellerden yer ayırtabilmeniz içindir.
+                        Bu site Akdeniz'in sıcak sularında istediğiniz zaman diliminde otellerden yer ayırtabilmeniz içindir.
+                        Bu site Akdeniz'in sıcak sularında istediğiniz zaman diliminde otellerden yer ayırtabilmeniz içindir.
+                        Bu site Akdeniz'in sıcak sularında istediğiniz zaman diliminde otellerden yer ayırtabilmeniz içindir.
+                        Bu site Akdeniz'in sıcak sularında istediğiniz zaman diliminde otellerden yer ayırtabilmeniz içindir.
+                        Bu site Akdeniz'in sıcak sularında istediğiniz zaman diliminde otellerden yer ayırtabilmeniz içindir.
+                    </p>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col text-center">
+                    <a  id="check-availability-button"  href="#!" class="btn btn-success">Check Availability</a>
+                </div>
+            </div>
+        </div>
+
+    {{end}}
+
+    {{define "js"}}
+
+        <script>
+            //The addEventListener() method attaches an event handler to the specified element.
+            document.getElementById("check-availability-button").addEventListener("click" , function(){
+
+                let html =
+                    `
+              <form id="check-availability-form" action = "" method= "post" novalidate class="needs-validation">
+                <div class="form-row">
+                  <div class="col">
+                    <div class="form-row" id="reservation-dates-modal">
+                      <div class="col">
+                        <input required class="form-control" type="date" name="start" id="start" placeholder="Arrival" />
+                      </div>
+                      <div class="col">
+                        <input required class="form-control" type="date" name="end" id="end" placeholder="Departure" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </form>
+              `
+
+                attention.custom({
+                    msg: html,
+                    title: "Choose your dates ",
+                    didOpen: () => {
+                        const start = document.getElementById('start').removeAttribute('disabled')
+                        const end = document.getElementById('end').removeAttribute('disabled')
+                    },
+
+
+                    callback: function(result){
+
+
+                        console.log("called")
+
+                        //here we get the form
+                        let form = document.getElementById("check-availability-form")
+                        //The FormData() constructor creates a new FormData object.
+                        let formData = new FormData(form)
+                        //The FormData.append() method appends a new value onto an existing key inside a FormData object,
+                        formData.append("csrf_token", "{{.CSRFToken}}" )
+
+
+                        //The fetch() method takes one mandatory argument, the path to the resource you want to fetch.
+                        fetch('/search-availability-json' , {
+                            method: "post",
+                            body: formData,
+                        })
+
+                            //The fetch method returns a promise, which is a JavaScript object that represents the eventual
+                            //completion (or failure) of an asynchronous operation, and its resulting value.
+                            .then(response => response.json())
+                            .then(data => {
+                                console.log(data);
+                                console.log(data.ok);
+                                console.log(data.message);
+                            })
+
+                    },
+                });
+            });
+        </script>
+{{end}}
