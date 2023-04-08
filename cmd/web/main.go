@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
+	"net/http"
+	"time"
+
 	"github.com/alexedwards/scs/v2"
 	"github.com/yusufelyldrm/reservation/pkg/config"
 	"github.com/yusufelyldrm/reservation/pkg/handlers"
 	"github.com/yusufelyldrm/reservation/pkg/render"
-	"net/http"
-	"time"
 
 	"log"
 )
@@ -46,7 +47,7 @@ func main() {
 	//http.HandleFunc("/", handlers.Repo.Home)
 	//http.HandleFunc("/about", handlers.Repo.About)
 
-	fmt.Println(fmt.Sprintf("Starting application on port %s\n Press 'Ctrl + C' to stop", portNumber))
+	fmt.Printf(fmt.Sprintf("Starting application on port %s\n Press 'Ctrl + C' to stop", portNumber))
 	srv := &http.Server{
 		Addr:    portNumber,
 		Handler: routes(app),
