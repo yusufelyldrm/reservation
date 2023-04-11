@@ -18,12 +18,11 @@ func NewTemplates(a *config.AppConfig) {
 }
 
 func AddDefaultData(td *models.TemplateData) *models.TemplateData {
-
 	return td
 }
 
 // RenderTemplate renders templates using html/template
-func RenderTemplate(w http.ResponseWriter, tmpl string, td *models.TemplateData) {
+/*func RenderTemplate(w http.ResponseWriter, tmpl string, td *models.TemplateData) {
 	var tc map[string]*template.Template
 	if app.UseCache {
 		//get template cache from app config
@@ -56,6 +55,34 @@ func RenderTemplate(w http.ResponseWriter, tmpl string, td *models.TemplateData)
 		return
 	}
 
+}*/
+
+// RenderTemplate renders templates using html/template
+func RenderTemplate(w http.ResponseWriter, tmpl string, td *models.TemplateData) {
+	var tc map[string]*template.Template
+	if app.UseCache {
+		//get template cache from app config
+		tc = app.TemplateCache
+	} else {
+		tc, _ = CreateTemplateCache()
+	}
+	//get requested template from cache
+	t, ok := tc[tmpl]
+	if !ok {
+		fmt.Println("Couldn't get template from template cache")
+		return
+	}
+
+	buf := new(bytes.Buffer)
+	td = AddDefaultData(td)
+	_ = t.Execute(buf, td)
+
+	//render the template
+	_, err := buf.WriteTo(w)
+	if err != nil {
+		fmt.Println("Error writing template to browser: ", err)
+		return
+	}
 }
 
 func CreateTemplateCache() (map[string]*template.Template, error) {
