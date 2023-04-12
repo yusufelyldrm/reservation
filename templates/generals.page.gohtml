@@ -37,66 +37,57 @@
     {{define "js"}}
 
         <script>
-            //The addEventListener() method attaches an event handler to the specified element.
-            document.getElementById("check-availability-button").addEventListener("click" , function(){
-
-                let html =
-                    `
-              <form id="check-availability-form" action = "" method= "post" novalidate class="needs-validation">
-                <div class="form-row">
-                  <div class="col">
+            document.getElementById("check-availability-button").addEventListener("click", function () {
+                let html = `
+        <form id="check-availability-form" action="" method="post" novalidate class="needs-validation">
+            <div class="form-row">
+                <div class="col">
                     <div class="form-row" id="reservation-dates-modal">
-                      <div class="col">
-                        <input required class="form-control" type="date" name="start" id="start" placeholder="Arrival" />
-                      </div>
-                      <div class="col">
-                        <input required class="form-control" type="date" name="end" id="end" placeholder="Departure" />
-                      </div>
+                        <div class="col">
+                            <input disabled required class="form-control" type="text" name="start" id="start" placeholder="Arrival">
+                        </div>
+                        <div class="col">
+                            <input disabled required class="form-control" type="text" name="end" id="end" placeholder="Departure">
+                        </div>
+
                     </div>
-                  </div>
                 </div>
-              </form>
-              `
-
+            </div>
+        </form>
+        `;
                 attention.custom({
+                    title: 'Choose your dates',
                     msg: html,
-                    title: "Choose your dates ",
-                    didOpen: () => {
-                        const start = document.getElementById('start').removeAttribute('disabled')
-                        const end = document.getElementById('end').removeAttribute('disabled')
+                    willOpen: () => {
+                        const elem = document.getElementById("reservation-dates-modal");
+                        const rp = new DateRangePicker(elem, {
+                            format: 'yyyy-mm-dd',
+                            showOnFocus: true,
+                        })
                     },
+                    didOpen: () => {
+                        document.getElementById("start").removeAttribute("disabled");
+                        document.getElementById("end").removeAttribute("disabled");
+                    },
+                    callback: function(result) {
+                        console.log("called");
 
+                        let form = document.getElementById("check-availability-form");
+                        let formData = new FormData(form);
+                        formData.append("csrf_token", "{{.CSRFToken}}");
 
-                    callback: function(result){
-
-
-                        console.log("called")
-
-                        //here we get the form
-                        let form = document.getElementById("check-availability-form")
-                        //The FormData() constructor creates a new FormData object.
-                        let formData = new FormData(form)
-                        //The FormData.append() method appends a new value onto an existing key inside a FormData object,
-                        formData.append("csrf_token", "{{.CSRFToken}}" )
-
-
-                        //The fetch() method takes one mandatory argument, the path to the resource you want to fetch.
-                        fetch('/search-availability-json' , {
+                        fetch('/search-availability-json', {
                             method: "post",
                             body: formData,
                         })
-
-                            //The fetch method returns a promise, which is a JavaScript object that represents the eventual
-                            //completion (or failure) of an asynchronous operation, and its resulting value.
                             .then(response => response.json())
                             .then(data => {
                                 console.log(data);
                                 console.log(data.ok);
                                 console.log(data.message);
                             })
-
-                    },
+                    }
                 });
-            });
+            })
         </script>
 {{end}}

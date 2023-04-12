@@ -2,169 +2,172 @@ package render
 
 import (
 	"bytes"
-	"fmt"
-	"github.com/yusufelyldrm/reservation/pkg/config"
-	"github.com/yusufelyldrm/reservation/pkg/models"
+	"html/template"
+	"log"
 	"net/http"
 	"path/filepath"
-	"text/template"
+
+	"github.com/justinas/nosurf"
+	"github.com/yusufelyldrm/reservation/pkg/config"
+	"github.com/yusufelyldrm/reservation/pkg/models"
 )
+
+// var functions = template.FuncMap{}
 
 var app *config.AppConfig
 
-// NewTemplates sets the config for the template package
+// NewTemplates set the config for the template package
 func NewTemplates(a *config.AppConfig) {
 	app = a
 }
 
-func AddDefaultData(td *models.TemplateData) *models.TemplateData {
+// AddDefaultData adds default data to the templateData struct and returns it back to the caller
+// function (RenderTemplate) as a pointer to the
+// struct (td) so that it can be used in the template file (base.layout.html) as
+// {{.CSRFToken}} and {{.Flash}} etc. (see base.layout.html) and {{.Data}}
+func AddDefaultData(td *models.TemplateData, r *http.Request) *models.TemplateData {
+	td.CSRFToken = nosurf.Token(r)
 	return td
 }
 
-// RenderTemplate renders templates using html/template
-/*func RenderTemplate(w http.ResponseWriter, tmpl string, td *models.TemplateData) {
+// RenderTemplate renders template using html/template
+func RenderTemplate(w http.ResponseWriter, r *http.Request, tmpl string, td *models.TemplateData) {
+
 	var tc map[string]*template.Template
 	if app.UseCache {
-		//get template cache from app config
+		//get the template cache from the app config
 		tc = app.TemplateCache
 	} else {
 		tc, _ = CreateTemplateCache()
 	}
+
 	//get requested template from cache
 	t, ok := tc[tmpl]
 	if !ok {
-		fmt.Println("Couldn't get template from template cache")
-		return
+		log.Fatal("could not get template from template cache")
 	}
 
+	//create a buffer to write to
 	buf := new(bytes.Buffer)
-	td = AddDefaultData(td)
-	_ = t.Execute(buf, td)
+
+	//add default data to template
+	td = AddDefaultData(td, r)
+
+	//execute the template
+	err := t.Execute(buf, td)
+	if err != nil {
+		log.Println(err)
+	}
 
 	//render the template
-	_, err := buf.WriteTo(w)
+	_, err = buf.WriteTo(w)
 	if err != nil {
-		fmt.Println("Error writing template to browser: ", err)
-		return
+		log.Println(err)
 	}
 
-	parsedTemplate, _ := template.ParseFiles("./templates/"+tmpl, "./templates/base.layout.gohtml")
-	err = parsedTemplate.Execute(w, td)
+	/*ParsedTemplate, _ := template.ParseFiles("./templates/"+tmpl, "./templates/base.layout.html")
+	err = ParsedTemplate.Execute(w, nil)
 	if err != nil {
-		fmt.Println("Error parsing template: ", err)
+		fmt.Println("error parsing template", err)
 		return
-	}
+	}*/
 
-}*/
-
-// RenderTemplate renders templates using html/template
-func RenderTemplate(w http.ResponseWriter, tmpl string, td *models.TemplateData) {
-	var tc map[string]*template.Template
-	if app.UseCache {
-		//get template cache from app config
-		tc = app.TemplateCache
-	} else {
-		tc, _ = CreateTemplateCache()
-	}
-	//get requested template from cache
-	t, ok := tc[tmpl]
-	if !ok {
-		fmt.Println("Couldn't get template from template cache")
-		return
-	}
-
-	buf := new(bytes.Buffer)
-	td = AddDefaultData(td)
-	_ = t.Execute(buf, td)
-
-	//render the template
-	_, err := buf.WriteTo(w)
-	if err != nil {
-		fmt.Println("Error writing template to browser: ", err)
-		return
-	}
 }
 
+// CreateTemplateCache creates a template cache as a map
 func CreateTemplateCache() (map[string]*template.Template, error) {
 	myCache := map[string]*template.Template{}
 
-	//get all the files named *.page.gohtml from ./templates
+	//get all the files named *.page.tmpl from ./templates
 	pages, err := filepath.Glob("./templates/*.page.gohtml")
+
 	if err != nil {
-		fmt.Println("Error getting pages: ", err)
 		return myCache, err
 	}
 
-	//range through the all files ending with *.page.gohtml
+	//range through all files ending with *.page.gohtml
 	for _, page := range pages {
+
 		//get the file name
 		name := filepath.Base(page)
+
+		//ParseFiles returns a *Template associated with the name
 		ts, err := template.New(name).ParseFiles(page)
 		if err != nil {
-			fmt.Println("Error parsing template: ", err)
 			return myCache, err
 		}
 
+		//get all the files named *.layout.gohtml from ./templates
 		matches, err := filepath.Glob("./templates/*.layout.gohtml")
 		if err != nil {
-			fmt.Println("Error getting layout files: ", err)
 			return myCache, err
 		}
 
+		//range through all files ending with *.layout.gohtml
 		if len(matches) > 0 {
 			ts, err = ts.ParseGlob("./templates/*.layout.gohtml")
 			if err != nil {
-				fmt.Println("Error parsing layout files: ", err)
 				return myCache, err
 			}
 		}
+		//add the template to the cache
 		myCache[name] = ts
 	}
+	//return the cache
 	return myCache, nil
 }
 
 /*
+//This is the simple one
+
 var tc = make(map[string]*template.Template)
 
-// RenderTemplate renders templates using html/template
 func RenderTemplate(w http.ResponseWriter, t string) {
-	var tmpl *template.Template
+	var gohtml *template.Template
 	var err error
 
-	//check if template have  already in our cache
+	//check to see if we already have the template in our cache
 	_, inMap := tc[t]
 	if !inMap {
-		//we need to create the
-		log.Println("Creating template and adding to cache")
+		log.Println("creating template and adding to cache ")
+		//need to create the template
 		err = createTemplateCache(t)
+
 		if err != nil {
 			log.Println(err)
 		}
+
 	} else {
-		//we use the template from the cache
-		log.Println("Using template from cache")
+		//we have the template in cache
+		log.Println("using cached template")
 	}
 
 	tmpl = tc[t]
+
 	err = tmpl.Execute(w, nil)
+
 	if err != nil {
 		log.Println(err)
 	}
-}
 
-// createTemplateCache creates a template cache as a map
+}
 func createTemplateCache(t string) error {
 	templates := []string{
 		fmt.Sprintf("./templates/%s", t),
-		"./templates/base.layout.gohtml",
+		"./templates/base.layout.html",
 	}
+
 	//parse the template
 	tmpl, err := template.ParseFiles(templates...)
+
 	if err != nil {
 		return err
 	}
-	//add the template to the cache
+
+	//add template to cache(map)
 	tc[t] = tmpl
+
 	return nil
+
 }
 */

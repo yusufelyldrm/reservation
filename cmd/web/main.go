@@ -50,7 +50,7 @@ func main() {
 	fmt.Printf(fmt.Sprintf("Starting application on port %s\n Press 'Ctrl + C' to stop", portNumber))
 	srv := &http.Server{
 		Addr:    portNumber,
-		Handler: routes(app),
+		Handler: Routes(&app),
 	}
 	err = srv.ListenAndServe()
 	if err != nil {

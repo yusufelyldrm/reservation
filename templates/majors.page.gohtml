@@ -35,29 +35,30 @@
 
 {{define "js"}}
 
-      <script>
-           document.getElementById("check-availability-button").addEventListener("click" , function(){
-
-              let html =
-              `
-              <form id="check-availability" action = "" method= "post" novalidate class="needs-validation">
-                <div class="form-row">
-                  <div class="col">
+    <script>
+        document.getElementById("check-availability-button").addEventListener("click", function () {
+            let html = `
+        <form id="check-availability-form" action="" method="post" novalidate class="needs-validation">
+            <div class="form-row">
+                <div class="col">
                     <div class="form-row" id="reservation-dates-modal">
-                      <div class="col">
-                        <input required class="form-control" type="date" name="start" id="start" placeholder="Arrival" />
-                      </div>
-                      <div class="col">
-                        <input required class="form-control" type="date" name="end" id="end" placeholder="Departure" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </form>
-              `
+                        <div class="col">
+                            <input disabled required class="form-control" type="text" name="start" id="start" placeholder="Arrival">
+                        </div>
+                        <div class="col">
+                            <input disabled required class="form-control" type="text" name="end" id="end" placeholder="Departure">
+                        </div>
 
-              attention.custom({msg: html , title: "Choose your dates "});
-              });
-      </script>
+                    </div>
+                </div>
+            </div>
+        </form>
+        `;
+            attention.custom({
+                title: 'Choose your dates',
+                msg: html,
+            });
+        })
+    </script>
 
 {{end}}
