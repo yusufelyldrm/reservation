@@ -3,13 +3,12 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/yusufelyldrm/reservation/internal/config"
+	"github.com/yusufelyldrm/reservation/internal/forms"
+	models2 "github.com/yusufelyldrm/reservation/internal/models"
+	"github.com/yusufelyldrm/reservation/internal/render"
 	"log"
 	"net/http"
-
-	"github.com/yusufelyldrm/reservation/pkg/config"
-	"github.com/yusufelyldrm/reservation/pkg/forms"
-	"github.com/yusufelyldrm/reservation/pkg/models"
-	"github.com/yusufelyldrm/reservation/pkg/render"
 )
 
 // Repo the repository used by the handlers
@@ -38,7 +37,7 @@ func (m *Repository) Home(w http.ResponseWriter, r *http.Request) {
 	remoteIp := r.RemoteAddr
 	m.App.Session.Put(r.Context(), "remote_ip", remoteIp)
 
-	render.RenderTemplate(w, r, "home.page.gohtml", &models.TemplateData{})
+	render.RenderTemplate(w, r, "home.page.gohtml", &models2.TemplateData{})
 }
 
 // About func is the about page handler
@@ -53,14 +52,14 @@ func (m *Repository) About(w http.ResponseWriter, r *http.Request) {
 	stringMap["remote_ip"] = remoteIp
 
 	//send to data to the template
-	render.RenderTemplate(w, r, "about.page.gohtml", &models.TemplateData{
+	render.RenderTemplate(w, r, "about.page.gohtml", &models2.TemplateData{
 		StringMap: stringMap,
 	})
 }
 
 // Reservation renders the make a reservation page and displays from
 func (m *Repository) Reservation(w http.ResponseWriter, r *http.Request) {
-	render.RenderTemplate(w, r, "make-reservation.page.gohtml", &models.TemplateData{
+	render.RenderTemplate(w, r, "make-reservation.page.gohtml", &models2.TemplateData{
 		Form: forms.New(nil),
 	})
 
@@ -74,7 +73,7 @@ func (m *Repository) PostReservation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	reservation := models.Reservation{
+	reservation := models2.Reservation{
 		FirstName: r.Form.Get("first_name"),
 		LastName:  r.Form.Get("last_name"),
 		Email:     r.Form.Get("email"),
@@ -87,7 +86,7 @@ func (m *Repository) PostReservation(w http.ResponseWriter, r *http.Request) {
 	if !form.Valid() {
 		data := make(map[string]interface{})
 		data["reservation"] = reservation
-		render.RenderTemplate(w, r, "make-reservation.page.gohtml", &models.TemplateData{
+		render.RenderTemplate(w, r, "make-reservation.page.gohtml", &models2.TemplateData{
 			Form: form,
 			Data: data,
 		})
@@ -98,17 +97,17 @@ func (m *Repository) PostReservation(w http.ResponseWriter, r *http.Request) {
 
 // Generals renders the room page
 func (m *Repository) Generals(w http.ResponseWriter, r *http.Request) {
-	render.RenderTemplate(w, r, "generals.page.gohtml", &models.TemplateData{})
+	render.RenderTemplate(w, r, "generals.page.gohtml", &models2.TemplateData{})
 }
 
 // Majors renders the room page
 func (m *Repository) Majors(w http.ResponseWriter, r *http.Request) {
-	render.RenderTemplate(w, r, "majors.page.gohtml", &models.TemplateData{})
+	render.RenderTemplate(w, r, "majors.page.gohtml", &models2.TemplateData{})
 }
 
 // Availability renders the search availability page
 func (m *Repository) Availability(w http.ResponseWriter, r *http.Request) {
-	render.RenderTemplate(w, r, "search-availability.page.gohtml", &models.TemplateData{})
+	render.RenderTemplate(w, r, "search-availability.page.gohtml", &models2.TemplateData{})
 }
 
 // PostAvailability renders the search availability page
@@ -165,5 +164,5 @@ func (m *Repository) AvailabilityJSON(w http.ResponseWriter, r *http.Request) {
 
 // Contact renders the contact page
 func (m *Repository) Contact(w http.ResponseWriter, r *http.Request) {
-	render.RenderTemplate(w, r, "contact.page.gohtml", &models.TemplateData{})
+	render.RenderTemplate(w, r, "contact.page.gohtml", &models2.TemplateData{})
 }

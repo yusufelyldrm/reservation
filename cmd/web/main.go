@@ -2,14 +2,13 @@ package main
 
 import (
 	"fmt"
+	"github.com/yusufelyldrm/reservation/internal/config"
+	"github.com/yusufelyldrm/reservation/internal/handlers"
+	"github.com/yusufelyldrm/reservation/internal/render"
 	"net/http"
 	"time"
 
 	"github.com/alexedwards/scs/v2"
-	"github.com/yusufelyldrm/reservation/pkg/config"
-	"github.com/yusufelyldrm/reservation/pkg/handlers"
-	"github.com/yusufelyldrm/reservation/pkg/render"
-
 	"log"
 )
 

@@ -2,14 +2,14 @@ package render
 
 import (
 	"bytes"
+	"github.com/yusufelyldrm/reservation/internal/config"
+	"github.com/yusufelyldrm/reservation/internal/models"
 	"html/template"
 	"log"
 	"net/http"
 	"path/filepath"
 
 	"github.com/justinas/nosurf"
-	"github.com/yusufelyldrm/reservation/pkg/config"
-	"github.com/yusufelyldrm/reservation/pkg/models"
 )
 
 // var functions = template.FuncMap{}
