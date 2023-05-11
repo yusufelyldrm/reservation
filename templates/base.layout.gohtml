@@ -200,6 +200,13 @@
                 showCancelButton : true,
 
                 //This is the function that will be called when the modal is closed.
+                willOpen: () => {
+                    if(c.willOpen !== undefined){
+                        c.willOpen();
+                    }
+                },
+
+                //This is the function that will be called when the modal is closed.
                 preConfirm: () => {
                     return [
                         document.getElementById('start').value,
@@ -209,28 +216,27 @@
 
                 //This is the function that will be called when the modal is opened.
                 didOpen: () => {
-                    if (c.didOpen !== undefined){
+                if(c.didOpen !== undefined){
                         c.didOpen();
                     }
-                }
-
+                },
             })
 
-            if (result) {
+            if(result){
                 if(result.dismiss !== Swal.DismissReason.cancel){
-                    if(result.value !== "")
-                        if(c.callback !== undefined){
-                            c.callback(result);
-                        }else{
-                            c.callback(false);
-                        }
+                  if(result.value!== ""){
+                    if(c.callback !== undefined){
+                      c.callback(result);
+                    }
+                  }else{
+                      c.callback(false);
+                    }
                 }else{
-                    c.callback(false);
+                     c.callback(false);
                 }
-            }else{
-                c.callback(false);
 
             }
+
         }
 
     </script>

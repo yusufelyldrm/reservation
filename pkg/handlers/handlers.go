@@ -156,9 +156,6 @@ func (m *Repository) AvailabilityJSON(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 	}
 
-	log.Println(
-		string(out),
-	)
 	// set the content type to JSON
 	w.Header().Set("Content-Type", "application/json")
 
