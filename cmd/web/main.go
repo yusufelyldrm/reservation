@@ -3,15 +3,14 @@ package main
 import (
 	"encoding/gob"
 	"fmt"
+	"github.com/alexedwards/scs/v2"
 	"github.com/yusufelyldrm/reservation/internal/config"
 	"github.com/yusufelyldrm/reservation/internal/handlers"
 	"github.com/yusufelyldrm/reservation/internal/models"
 	"github.com/yusufelyldrm/reservation/internal/render"
+	"log"
 	"net/http"
 	"time"
-
-	"github.com/alexedwards/scs/v2"
-	"log"
 )
 
 const portNumber = ":8080"
@@ -21,6 +20,24 @@ var session *scs.SessionManager
 
 // main is the main application function
 func main() {
+	err := run()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf(fmt.Sprintf("Starting application on port %s\n Press 'Ctrl + C' to stop", portNumber))
+	srv := &http.Server{
+		Addr:    portNumber,
+		Handler: Routes(&app),
+	}
+
+	err = srv.ListenAndServe()
+	log.Fatal(err)
+
+}
+
+func run() error {
+
 	//what am I going to put in the session
 	gob.Register(models.Reservation{})
 
@@ -38,6 +55,7 @@ func main() {
 	tc, err := render.CreateTemplateCache()
 	if err != nil {
 		log.Fatal("Cannot create template cache")
+		return err
 	}
 	app.TemplateCache = tc
 	app.UseCache = false
@@ -47,20 +65,5 @@ func main() {
 
 	render.NewTemplates(&app)
 
-	//http.HandleFunc("/", handlers.Repo.Home)
-	//http.HandleFunc("/about", handlers.Repo.About)
-
-	fmt.Printf(fmt.Sprintf("Starting application on port %s\n Press 'Ctrl + C' to stop", portNumber))
-	srv := &http.Server{
-		Addr:    portNumber,
-		Handler: Routes(&app),
-	}
-	err = srv.ListenAndServe()
-	if err != nil {
-		log.Fatal(err)
-	}
-	//err = http.ListenAndServe(portNumber, nil)
-	if err != nil {
-		fmt.Println(err)
-	}
+	return nil
 }
