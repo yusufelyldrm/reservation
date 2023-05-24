@@ -22,7 +22,7 @@ func TestAddDefaultData(t *testing.T) {
 	}
 }
 
-// its not working ı will check this test func
+// it's not working ı will check this test func
 func TestRenderTemplate(t *testing.T) {
 	pathToTemplates = "./../../templates"
 	tc, err := CreateTemplateCache()
