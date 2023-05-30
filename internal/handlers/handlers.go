@@ -4,10 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/yusufelyldrm/reservation/internal/config"
+	"github.com/yusufelyldrm/reservation/internal/driver"
 	"github.com/yusufelyldrm/reservation/internal/forms"
 	"github.com/yusufelyldrm/reservation/internal/helpers"
 	"github.com/yusufelyldrm/reservation/internal/models"
 	"github.com/yusufelyldrm/reservation/internal/render"
+	"github.com/yusufelyldrm/reservation/internal/repository"
+	"github.com/yusufelyldrm/reservation/internal/repository/dbrepo"
 	"log"
 	"net/http"
 )
@@ -18,12 +21,14 @@ var Repo *Repository
 // Repository is the repository type
 type Repository struct {
 	App *config.AppConfig
+	DB  repository.DatabaseRepo
 }
 
 // NewRepo Creates a new repository
-func NewRepo(a *config.AppConfig) *Repository {
+func NewRepo(a *config.AppConfig, db *driver.DB) *Repository {
 	return &Repository{
 		App: a,
+		DB:  dbrepo.NewPostgresRepo(db.SQL, a),
 	}
 }
 
