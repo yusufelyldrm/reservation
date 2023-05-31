@@ -1,8 +1,13 @@
 package repository
 
-import "github.com/yusufelyldrm/reservation/internal/models"
+import (
+	"github.com/yusufelyldrm/reservation/internal/models"
+	"time"
+)
 
 type DatabaseRepo interface {
 	AllUsers() bool
-	InsertReservation(res *models.Reservation) error
+	InsertReservation(res models.Reservation) (int, error)
+	InsertRoomRestriction(r models.RoomRestriction) error
+	SearchAvailabilityByDatesByRoomID(start, end time.Time, roomID int) (bool, error)
 }
