@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/yusufelyldrm/reservation/internal/config"
 	"github.com/yusufelyldrm/reservation/internal/driver"
 	"github.com/yusufelyldrm/reservation/internal/forms"
@@ -178,12 +177,54 @@ func (m *Repository) PostAvailability(w http.ResponseWriter, r *http.Request) {
 		start := r.Form.Get("start")
 		end := r.Form.Get("end")
 
-		//print response
-		n, err := w.Write([]byte(fmt.Sprintf("Start date is %s end date is %s ", start, end)))
+		// convert the start date to time.Time
+		layout := "2006-01-02"
+		startDate, err := time.Parse(layout, start)
+		if err != nil {
+			helpers.ServerError(w, err)
+			return
+		}
+
+		// convert the end date to time.Time
+		endDate, err := time.Parse(layout, end)
+		if err != nil {
+			helpers.ServerError(w, err)
+			return
+		}
+
+		// get the availability, if any, for the given dates, if there is an error, return it to the user
+		rooms, err := m.DB.SearchAvailabilityForAllRooms(startDate, endDate)
+		if err != nil {
+			helpers.ServerError(w, err)
+			return
+		}
+
+		// if no availability, redirect to the search availability page, with a flash message
+		if len(rooms) == 0 {
+			// no availability
+			m.App.Session.Put(r.Context(), "error", "No availability")
+			http.Redirect(w, r, "/search-availability", http.StatusSeeOther)
+			return
+		}
+
+		// send the data to the template
+		data := make(map[string]interface{})
+		data["rooms"] = rooms
+
+		// store the data in the session
+		res := models.Reservation{
+			StartDate: startDate,
+			EndDate:   endDate,
+		}
+		m.App.Session.Put(r.Context(), "reservation", res)
+
+		err = render.Template(w, r, "choose-room.page.gohtml", &models.TemplateData{
+			Data: data,
+		})
+
 		if err != nil {
 			log.Printf("Error writing response: %v", err)
 		}
-		log.Printf("Wrote %d bytes ", n)
 	} else {
 		// if the request method is not POST , return an error
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
