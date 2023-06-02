@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/yusufelyldrm/reservation/internal/config"
 	"github.com/yusufelyldrm/reservation/internal/driver"
@@ -276,10 +277,36 @@ type jsonResponse struct {
 // AvailabilityJSON handles request for availability and send JSON response
 func (m *Repository) AvailabilityJSON(w http.ResponseWriter, r *http.Request) {
 
-	resp := jsonResponse{
-		OK:      false,
-		Message: "Available!",
+	sd := r.Form.Get("start")
+	ed := r.Form.Get("end")
+
+	layout := "2006-01-02"
+	startDate, err := time.Parse(layout, sd)
+	if err != nil {
+		fmt.Println("Error parsing start date:", err)
 	}
+
+	endDate, err := time.Parse(layout, ed)
+	if err != nil {
+		fmt.Println("Error parsing end date:", err)
+	}
+
+	roomID, err := strconv.Atoi(r.Form.Get("room_id"))
+	if err != nil {
+		fmt.Println("Error converting room ID:", err)
+	}
+
+	available, err := m.DB.SearchAvailabilityByDatesByRoomID(startDate, endDate, roomID)
+	if err != nil {
+		helpers.ServerError(w, err)
+		return
+	}
+
+	resp := jsonResponse{
+		OK:      available,
+		Message: "",
+	}
+
 	// convert the response to JSON
 	out, err := json.MarshalIndent(resp, "", "     ")
 
