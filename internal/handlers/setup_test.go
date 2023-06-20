@@ -9,7 +9,6 @@ import (
 	"github.com/justinas/nosurf"
 	"github.com/yusufelyldrm/reservation/internal/config"
 	"github.com/yusufelyldrm/reservation/internal/models"
-	"github.com/yusufelyldrm/reservation/internal/render"
 	"html/template"
 	"log"
 	"net/http"
@@ -52,10 +51,10 @@ func getRoutes() http.Handler {
 	app.TemplateCache = tc
 	app.UseCache = true
 
-	repo := NewRepo(&app)
-	NewHandlers(repo)
+	//repo := NewRepo(&app)
+	//	NewHandlers(repo)
 
-	render.NewTemplates(&app)
+	//render.NewTemplates(&app)
 
 	//mux is a router
 	mux := chi.NewRouter()
