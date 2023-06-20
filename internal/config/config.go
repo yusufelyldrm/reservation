@@ -2,6 +2,7 @@ package config
 
 import (
 	"github.com/alexedwards/scs/v2"
+	"github.com/yusufelyldrm/reservation/internal/models"
 	"html/template"
 	"log"
 )
@@ -13,4 +14,5 @@ type AppConfig struct {
 	InfoLog       *log.Logger                   // InfoLog is a logger dedicated to logging info messages
 	ErrorLog      *log.Logger                   // ErrorLog is a logger dedicated to logging error messages
 	Session       *scs.SessionManager           // Session is a session manager
+	MailChan      chan models.MailData
 }
