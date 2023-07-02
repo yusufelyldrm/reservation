@@ -3,6 +3,11 @@ package main
 import (
 	"encoding/gob"
 	"fmt"
+	"log"
+	"net/http"
+	"os"
+	"time"
+
 	"github.com/alexedwards/scs/v2"
 	"github.com/yusufelyldrm/reservation/internal/config"
 	"github.com/yusufelyldrm/reservation/internal/driver"
@@ -10,10 +15,6 @@ import (
 	"github.com/yusufelyldrm/reservation/internal/helpers"
 	"github.com/yusufelyldrm/reservation/internal/models"
 	"github.com/yusufelyldrm/reservation/internal/render"
-	"log"
-	"net/http"
-	"os"
-	"time"
 )
 
 const portNumber = ":8080"
@@ -35,15 +36,6 @@ func main() {
 
 	fmt.Println("Starting mail listener...")
 	listenForMail()
-
-	msg := models.MailData{
-		To:      "me@here.com",
-		From:    "you@there.com",
-		Subject: "Mail sending with golang",
-		Content: "",
-	}
-
-	app.MailChan <- msg
 
 	fmt.Printf(fmt.Sprintf("Starting application on port %s\n Press 'Ctrl + C' to stop", portNumber))
 	srv := &http.Server{

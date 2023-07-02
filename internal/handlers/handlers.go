@@ -4,6 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
+	"net/http"
+	"strconv"
+	"time"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/yusufelyldrm/reservation/internal/config"
 	"github.com/yusufelyldrm/reservation/internal/driver"
@@ -13,10 +18,6 @@ import (
 	"github.com/yusufelyldrm/reservation/internal/render"
 	"github.com/yusufelyldrm/reservation/internal/repository"
 	"github.com/yusufelyldrm/reservation/internal/repository/dbrepo"
-	"log"
-	"net/http"
-	"strconv"
-	"time"
 )
 
 // Repo the repository used by the handlers
@@ -66,14 +67,14 @@ func (m *Repository) About(w http.ResponseWriter, r *http.Request) {
 func (m *Repository) Reservation(w http.ResponseWriter, r *http.Request) {
 	res, ok := m.App.Session.Get(r.Context(), "reservation").(models.Reservation)
 	if !ok {
-		helpers.ServerError(w, errors.New("cannot get reservation from session"))
-		return
+		m.App.Session.Put(r.Context(), "error", "can not get reservation from session")
+		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 	}
 
 	room, err := m.DB.GetRoomByID(res.RoomID)
 	if err != nil {
-		helpers.ServerError(w, err)
-		return
+		m.App.Session.Put(r.Context(), "error", "can not find room")
+		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 	}
 
 	res.Room.RoomName = room.RoomName // add room name to reservation
@@ -107,48 +108,48 @@ func (m *Repository) PostReservation(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err := r.ParseForm()
-	//err = errors.New("this is an error message")
 	if err != nil {
 		helpers.ServerError(w, err)
 		return
 	}
-	/*
-		sd := r.Form.Get("start_date")
-		ed := r.Form.Get("end_date")
 
-		layout := "2006-01-02"
-		startDate, err := time.Parse(layout, sd)
-		if err != nil {
-			helpers.ServerError(w, err)
-			return
-		}
+	sd := r.Form.Get("start_date")
+	ed := r.Form.Get("end_date")
 
-		endDate, err := time.Parse(layout, ed)
-		if err != nil {
-			helpers.ServerError(w, err)
-			return
-		}
+	layout := "2006-01-02"
 
-		roomID, err := strconv.Atoi(r.Form.Get("room_id"))
-		if err != nil {
-			helpers.ServerError(w, err)
-			return
-		}*/
+	startDate, err := time.Parse(layout, sd)
+	if err != nil {
+		helpers.ServerError(w, err)
+		return
+	}
+
+	endDate, err := time.Parse(layout, ed)
+	if err != nil {
+		helpers.ServerError(w, err)
+		return
+	}
+
+	roomID, err := strconv.Atoi(r.Form.Get("room_id"))
+	if err != nil {
+		helpers.ServerError(w, err)
+		return
+	}
 
 	reservation.FirstName = r.Form.Get("first_name")
 	reservation.LastName = r.Form.Get("last_name")
 	reservation.Email = r.Form.Get("email")
 	reservation.Phone = r.Form.Get("phone")
-	/*
-		reservation := models.Reservation{
-			FirstName: r.Form.Get("first_name"),
-			LastName:  r.Form.Get("last_name"),
-			Email:     r.Form.Get("email"),
-			Phone:     r.Form.Get("phone"),
-			StartDate: startDate,
-			EndDate:   endDate,
-			RoomID:    roomID,
-		}*/
+
+	reservation = models.Reservation{
+		FirstName: r.Form.Get("first_name"),
+		LastName:  r.Form.Get("last_name"),
+		Email:     r.Form.Get("email"),
+		Phone:     r.Form.Get("phone"),
+		StartDate: startDate,
+		EndDate:   endDate,
+		RoomID:    roomID,
+	}
 
 	form := forms.New(r.PostForm)
 	//form.Has("first_name", r)
@@ -186,7 +187,27 @@ func (m *Repository) PostReservation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//send notification - first to guest
+	htmlMessage := fmt.Sprintf(`
+	<strong>Reservation Confirmation</strong><br>
+	Dear %s: <br>
+	This is to confirm your reservation from %s to %s.`,
+		reservation.FirstName,
+		reservation.StartDate.Format("2006-01-02"),
+		reservation.EndDate.Format("2006-01-02"),
+	)
+
+	msg := models.MailData{
+		To:      reservation.Email,
+		From:    "you@there.com",
+		Subject: "Reservation Confirmation",
+		Content: htmlMessage,
+	}
+
+	m.App.MailChan <- msg
+
 	m.App.Session.Put(r.Context(), "reservation", reservation)
+
 	http.Redirect(w, r, "/reservation-summary", http.StatusSeeOther)
 
 }

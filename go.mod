@@ -11,6 +11,7 @@ require (
 	github.com/alexedwards/scs/v2 v2.5.1
 	github.com/jackc/pgconn v1.14.0
 	github.com/jackc/pgx/v4 v4.18.1
+	github.com/xhit/go-simple-mail/v2 v2.13.0
 )
 
 require (
@@ -82,7 +83,6 @@ require (
 	github.com/t-k/fluent-logger-golang v1.0.0 // indirect
 	github.com/tinylib/msgp v1.1.8 // indirect
 	github.com/toorop/go-dkim v0.0.0-20201103131630-e1cd1a0a5208 // indirect
-	github.com/xhit/go-simple-mail/v2 v2.13.0 // indirect
 	golang.org/x/mod v0.7.0 // indirect
 	golang.org/x/net v0.6.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
