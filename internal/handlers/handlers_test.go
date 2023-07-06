@@ -2,9 +2,11 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/yusufelyldrm/reservation/internal/models"
@@ -76,6 +78,7 @@ func TestRepository_Reservation(t *testing.T) {
 	req = req.WithContext(ctx)
 
 	rr := httptest.NewRecorder()
+
 	session.Put(ctx, "reservation", reservation)
 	handler := http.HandlerFunc(Repo.Reservation)
 	handler.ServeHTTP(rr, req)
@@ -106,6 +109,73 @@ func TestRepository_Reservation(t *testing.T) {
 	handler.ServeHTTP(rr, req)
 	if rr.Code != http.StatusTemporaryRedirect {
 		t.Errorf("Reservation handler returned wrong response code: got %d, wanted %d", rr.Code, http.StatusTemporaryRedirect)
+	}
+
+}
+
+func TestRepository_PostReservation(t *testing.T) {
+	reqBody := `start_date=2023-01-01`
+	reqBody = fmt.Sprintf("%s&%s", reqBody, "end_date=2023-01-02")
+	reqBody = fmt.Sprintf("%s&%s", reqBody, "first_name=Yusuf")
+	reqBody = fmt.Sprintf("%s&%s", reqBody, "last_name=Elyıldırım")
+	reqBody = fmt.Sprintf("%s&%s", reqBody, "email=yusufelyildirim@gmail.com")
+	reqBody = fmt.Sprintf("%s&%s", reqBody, "phone=555-555-5555")
+	reqBody = fmt.Sprintf("%s&%s", reqBody, "room_id=1")
+
+	req, _ := http.NewRequest("POST", "/make-reservation", strings.NewReader(reqBody))
+	ctx := getCtx(req)
+	req = req.WithContext(ctx)
+
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	rr := httptest.NewRecorder()
+
+	handler := http.HandlerFunc(Repo.PostReservation)
+
+	handler.ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusSeeOther {
+		t.Errorf("PostReservation handler returned wrong response code: got %d, wanted %d", rr.Code, http.StatusSeeOther)
+	}
+
+	//test form missing post body
+	req, _ = http.NewRequest("POST", "/make-reservation", strings.NewReader(reqBody))
+	ctx = getCtx(req)
+	req = req.WithContext(ctx)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	rr = httptest.NewRecorder()
+
+	handler = http.HandlerFunc(Repo.PostReservation)
+
+	handler.ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusTemporaryRedirect {
+		t.Errorf("PostReservation handler returned wrong response code for missing post body : got %d, wanted %d", rr.Code, http.StatusTemporaryRedirect)
+	}
+
+	//test form missing invalid start date
+	reqBody = `start_date=invalid`
+	reqBody = fmt.Sprintf("%s&%s", reqBody, "end_date=2023-01-02")
+	reqBody = fmt.Sprintf("%s&%s", reqBody, "first_name=Yusuf")
+	reqBody = fmt.Sprintf("%s&%s", reqBody, "last_name=Elyıldırım")
+	reqBody = fmt.Sprintf("%s&%s", reqBody, "email=yusufelyildirim@gmail.com")
+	reqBody = fmt.Sprintf("%s&%s", reqBody, "phone=555-555-5555")
+	reqBody = fmt.Sprintf("%s&%s", reqBody, "room_id=1")
+
+	req, _ = http.NewRequest("POST", "/make-reservation", strings.NewReader(reqBody))
+	ctx = getCtx(req)
+	req = req.WithContext(ctx)
+
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	rr = httptest.NewRecorder()
+
+	handler = http.HandlerFunc(Repo.PostReservation)
+
+	handler.ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusTemporaryRedirect {
+		t.Errorf("PostReservation handler returned wrong response code for invalid start date: got %d, wanted %d", rr.Code, http.StatusTemporaryRedirect)
 	}
 
 }
