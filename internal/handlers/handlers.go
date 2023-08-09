@@ -100,11 +100,11 @@ func (m *Repository) Reservation(w http.ResponseWriter, r *http.Request) {
 
 // PostReservation handles the posting of a reservation form
 func (m *Repository) PostReservation(w http.ResponseWriter, r *http.Request) {
-	/*	reservation, ok := m.App.Session.Get(r.Context(), "reservation").(models.Reservation)
-		if !ok {
-			m.App.Session.Put(r.Context(), "error", "can not parse form")
-			http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
-		}*/
+	reservation, ok := m.App.Session.Get(r.Context(), "reservation").(models.Reservation)
+	if !ok {
+		m.App.Session.Put(r.Context(), "error", "can not parse form")
+		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+	}
 
 	err := r.ParseForm()
 	if err != nil {
@@ -211,7 +211,6 @@ func (m *Repository) PostReservation(w http.ResponseWriter, r *http.Request) {
 	m.App.MailChan <- msg
 
 	m.App.Session.Put(r.Context(), "reservation", reservation)
-
 	http.Redirect(w, r, "/reservation-summary", http.StatusSeeOther)
 
 }
@@ -313,6 +312,19 @@ type jsonResponse struct {
 // AvailabilityJSON handles request for availability and send JSON response
 func (m *Repository) AvailabilityJSON(w http.ResponseWriter, r *http.Request) {
 
+	err := r.ParseForm()
+	if err != nil {
+		resp := jsonResponse{
+			OK:      false,
+			Message: "Internal server error",
+		}
+
+		out, _ := json.MarshalIndent(resp, "", "     ")
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(out)
+		return
+	}
+
 	sd := r.Form.Get("start")
 	ed := r.Form.Get("end")
 
@@ -334,7 +346,14 @@ func (m *Repository) AvailabilityJSON(w http.ResponseWriter, r *http.Request) {
 
 	available, err := m.DB.SearchAvailabilityByDatesByRoomID(startDate, endDate, roomID)
 	if err != nil {
-		helpers.ServerError(w, err)
+		resp := jsonResponse{
+			OK:      false,
+			Message: "Error connecting to database",
+		}
+
+		out, _ := json.MarshalIndent(resp, "", "     ")
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(out)
 		return
 	}
 
