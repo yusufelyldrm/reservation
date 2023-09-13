@@ -306,7 +306,7 @@ func TestRepository_PostReservation(t *testing.T) {
 	}
 }
 
-func TestRepoitory_AvailabilityJSON(t *testing.T) {
+func TestRepository_AvailabilityJSON(t *testing.T) {
 	//first case-room are not available
 
 	reqBody := "start_date=2023-01-01"
