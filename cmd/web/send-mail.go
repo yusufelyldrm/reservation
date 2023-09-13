@@ -1,9 +1,12 @@
 package main
 
 import (
+	"fmt"
 	mail "github.com/xhit/go-simple-mail/v2"
 	"github.com/yusufelyldrm/reservation/internal/models"
 	_ "net/mail"
+	"os"
+	"strings"
 	"time"
 )
 
@@ -32,7 +35,19 @@ func sendMsg(m models.MailData) {
 
 	email := mail.NewMSG()
 	email.SetFrom(m.From).AddTo(m.To).SetSubject(m.Subject)
-	email.SetBody(mail.TextHTML, string(m.Content))
+	if m.Template == "" {
+		email.SetBody(mail.TextHTML, m.Content)
+	} else {
+		data, err := os.ReadFile(fmt.Sprintf("./email-templates/%s", m.Template))
+		if err != nil {
+			app.ErrorLog.Println(err)
+			return
+		}
+		mailTemplate := string(data)
+		msgToSend := strings.Replace(mailTemplate, "[%body%]", m.Content, 1)
+		email.SetBody(mail.TextHTML, msgToSend)
+
+	}
 	err = email.Send(client)
 	if err != nil {
 		app.ErrorLog.Println(err)
