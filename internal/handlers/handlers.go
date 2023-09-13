@@ -485,3 +485,67 @@ func (m *Repository) BookRoom(w http.ResponseWriter, r *http.Request) {
 
 	http.Redirect(w, r, "/make-reservation", http.StatusSeeOther)
 }
+
+// ShowLogin shows the login page
+func (m *Repository) ShowLogin(w http.ResponseWriter, r *http.Request) {
+	render.Template(w, r, "login.page.gohtml", &models.TemplateData{
+		Form: forms.New(nil),
+	})
+}
+
+// PostShowLogin handles logging in
+func (m *Repository) PostShowLogin(w http.ResponseWriter, r *http.Request) {
+
+	_ = m.App.Session.RenewToken(r.Context())
+
+	// parse the form data
+	err := r.ParseForm()
+	if err != nil {
+		log.Println(err)
+	}
+
+	form := forms.New(r.PostForm)
+	form.Required("email", "password")
+	form.IsEmail("email")
+
+	if !form.Valid() {
+		render.Template(w, r, "login.page.gohtml", &models.TemplateData{
+			Form: form,
+		})
+		return
+	}
+
+	// get the form data
+	email := r.Form.Get("email")
+	password := r.Form.Get("password")
+
+	// check if the credentials are valid
+	id, _, err := m.DB.Authenticate(email, password)
+	if err != nil {
+		log.Println(err)
+		m.App.Session.Put(r.Context(), "error", "Invalid login credentials")
+		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+		return
+	}
+
+	// store the user id in the session
+	m.App.Session.Put(r.Context(), "user_id", id)
+	m.App.Session.Put(r.Context(), "flash", "Logged in successfully")
+
+	http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+}
+
+// Logout logs the user out
+func (m *Repository) Logout(w http.ResponseWriter, r *http.Request) {
+	_ = m.App.Session.Destroy(r.Context()) // destroy the session
+	_ = m.App.Session.RenewToken(r.Context())
+
+	m.App.Session.Put(r.Context(), "flash", "Logged out successfully")
+
+	http.Redirect(w, r, "/user/login", http.StatusSeeOther) // redirect to the home page
+}
+
+// AdminDashboard displays the admin dashboard
+func (m *Repository) AdminDashboard(w http.ResponseWriter, r *http.Request) {
+	render.Template(w, r, "admin-dashboard.page.gohtml", &models.TemplateData{})
+}
