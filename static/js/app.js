@@ -97,7 +97,7 @@ async function custom(c){
                 document.getElementById('end').value,
             ]
         },
-
+        
         //This is the function that will be called when the modal is opened.
         didOpen: () => {
             if(c.didOpen !== undefined){
